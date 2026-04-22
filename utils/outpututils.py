@@ -6,11 +6,11 @@ def create_submission_txt(filename, value, precision=6):
     np.set_printoptions(suppress=True, precision=precision)
     
     with open(filename, "w") as f:
-        if type(value) == float or type(value) == int: 
+        if isinstance(value, (int, float)): 
             print(value, file=f)
-        elif type(value) == list:
+        elif isinstance(value, list):
             print(*value, file=f)
-        elif type(value) == np.ndarray:  
+        elif isinstance(value, np.ndarray):  
             print(*value.flatten(), file=f)
 
 def copy_submission_txt(in_path, out_path):

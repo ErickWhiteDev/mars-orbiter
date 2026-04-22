@@ -39,3 +39,16 @@ def matrix_derivative(f, x, shape, args=(), **kwargs):
             dfdx[i, j] = derivative(np.vectorize(f_element, signature='(),(),()->()'), x, args=(i, j), **kwargs).df
 
     return dfdx
+
+import numpy as np
+
+def RK4_step(t, h, X, eval_f, **kwargs):
+    tj = t + h
+    k1 = h * eval_f(tj, X, **kwargs)
+    k2 = h * eval_f(tj + h / 2, X + 0.5 * k1, **kwargs)
+    k3 = h * eval_f(tj + h / 2, X + 1 / 2 * k2, **kwargs)
+    k4 = h * eval_f(tj + h, X + k3, **kwargs)
+
+    Xj = X + 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+
+    return tj, Xj

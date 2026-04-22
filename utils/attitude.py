@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from utils.mathutils import vec2tilde, RK4_step
+
 class Attitude():
     def __init__(self, type, omega, attitude):
         self.omega = omega
@@ -24,6 +26,20 @@ class Attitude():
             BR_mrp = get_mrp_shadow_set(BR_mrp)
 
         return B_omega_BR, BR_mrp
+    
+    def get_state(self, type):
+        match type:
+            case 'MRP':
+                return np.hstack((self.mrp, self.omega))
+            
+    def update_state(self, type, state):
+        match type:
+            case 'MRP':
+                self.mrp = state[0:3]
+                self.omega = state[3:6]
+
+                self.rot = R.from_mrp(self.mrp).inv()
+                self.dcm = self.rot.as_matrix()
 
 def axes2dcm(ax1, v1, ax2, v2):
     axes = [1, 2, 3]
@@ -63,5 +79,60 @@ def quat2dcm(quat):
 def dcm2quat(dcm):
     return R.from_matrix(dcm).inv().as_quat(scalar_first=True)
 
+def mrp2dcm(mrp):
+    return R.from_mrp(mrp).inv().as_matrix()
+
+def dcm2mrp(dcm):
+    return R.from_matrix(dcm).inv().as_mrp()
+
 def get_mrp_shadow_set(mrp):
     return -mrp / np.dot(mrp, mrp)
+
+def get_short_mrp(mrp):
+    mrp_norm = np.linalg.norm(mrp)
+    if mrp_norm >= 1:
+        mrp = get_mrp_shadow_set(mrp)
+    
+    return mrp
+
+def eom(t, X, type, I, u, **kwargs):
+    attitude = X[0:3]
+    omega = X[3:6]
+
+    if type == 'MRP':
+        mrp = attitude
+        mrp_dot = 0.25 * ((1 - np.dot(mrp, mrp)) * np.eye(3) + 2 * vec2tilde(mrp) + 2 * np.outer(mrp, mrp)) @ omega
+
+    omega_dot = np.linalg.inv(I) @ (u - np.cross(omega, I @ omega))
+
+    return np.hstack((mrp_dot, omega_dot))
+
+def RK4_mrp(a, b, h, X0, I, control_law=lambda t, attitude, omega, **kwargs: np.zeros(3), **kwargs):
+    kwargs['type'] = 'MRP'
+    kwargs['I'] = I
+    kwargs['control_law'] = control_law
+
+    u0 = control_law(a, X0[0:3], X0[3:6], **kwargs)
+
+    N = int((b - a) / h)
+
+    X = np.zeros((N + 1, X0.size))
+    t = np.zeros(N + 1)
+    u = np.zeros((N + 1, u0.size))
+
+    X[0, :] = X0
+    t[0] = a
+    u[0, :] = u0
+
+    for j in range(1, N + 1):
+        uj = control_law(t[j - 1], X[j - 1, 0:3], X[j - 1, 3:6], **kwargs)
+        u[j] = uj
+        kwargs['u'] = uj
+
+        tj, yapp_j = RK4_step(t[j - 1], h, X[j - 1, :], eom, **kwargs)
+        t[j] = tj
+
+        X[j, 0:3] = get_short_mrp(yapp_j[0:3])
+        X[j, 3:6] = yapp_j[3:6]
+
+    return t, X, u

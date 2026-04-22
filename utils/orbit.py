@@ -38,6 +38,9 @@ class Orbit:
             'omega': self.omega,
             'theta': self.theta
         }
+    
+    def get_kep_state_vector(self):
+        return np.array([self.a, self.e, self.i, self.Omega, self.omega, self.theta])
 
     def get_cart_state(self):
         return {
@@ -49,6 +52,33 @@ class Orbit:
             'vz': self.vvec[2]
         }
     
+    def get_cart_state_vector(self):
+        return np.array([self.rvec[0], self.rvec[1], self.rvec[2], self.vvec[0], self.vvec[1], self.vvec[2]])
+    
+    def update_from_kep_state(self, state):
+        self.a = state[0]
+        self.e = state[1]
+        self.i = state[2]
+        self.Omega = state[3]
+        self.omega = state[4]
+        self.theta = state[5]
+
+        cart_state = kep2cart(self.get_kep_state(), self.planet.mu)
+        self.rvec = np.array([cart_state.get('x'), cart_state.get('y'), cart_state.get('z')])
+        self.vvec = np.array([cart_state.get('vx'), cart_state.get('vy'), cart_state.get('vz')])
+
+    def update_from_cart_state(self, state):
+        self.rvec = np.array([state[0], state[1], state[2]])
+        self.vvec = np.array([state[3], state[4], state[5]])
+
+        kep_state = cart2kep(self.get_cart_state(), self.planet.mu)
+        self.a = kep_state.get('a')
+        self.e = kep_state.get('e')
+        self.i = kep_state.get('i')
+        self.Omega = kep_state.get('Omega')
+        self.omega = kep_state.get('omega')
+        self.theta = kep_state.get('theta')
+
     def find_true_anomaly(self, t, eps=1E-5):
         e = self.e
         a = self.a
@@ -56,7 +86,7 @@ class Orbit:
         mu = self.planet.mu
 
         if np.abs(1 - e) < eps:
-            cart_state = kep2cart(self)
+            cart_state = kep2cart(self.get_kep_state(), self.planet.mu)
             rvec = np.array([cart_state['x'], cart_state['y'], cart_state['z']])
             vvec = np.array([cart_state['vx'], cart_state['vy'], cart_state['vz']])
 
