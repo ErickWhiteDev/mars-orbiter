@@ -185,6 +185,16 @@ def cart2kep(state, mu, eps=1E-5):
         'theta': theta,
     }
 
+def cart2kep_vector(state, mu, eps=1E-5):
+    return np.array([cart2kep({
+        'x': state[0],
+        'y': state[1],
+        'z': state[2],
+        'vx': state[3],
+        'vy': state[4],
+        'vz': state[5]
+    }, mu, eps=eps)[key] for key in ['a', 'e', 'i', 'Omega', 'omega', 'theta']])
+
 def kep2cart(state, mu):
     a = state['a']
     e = state['e']
@@ -220,6 +230,23 @@ def kep2cart(state, mu):
         'vy': vvec[1],
         'vz': vvec[2]
         }
+
+def kep2cart_vector(state, mu):
+    a = state[0]
+    e = state[1]
+    i = state[2]
+    Omega = state[3]
+    omega = state[4]
+    theta = state[5]
+
+    return np.array([kep2cart({
+        'a': a,
+        'e': e,
+        'i': i,
+        'Omega': Omega,
+        'omega': omega,
+        'theta': theta
+    }, mu)[key] for key in ['x', 'y', 'z', 'vx', 'vy', 'vz']])
 
 def angles2state(r, Omega, i, theta, mu):
     v = np.sqrt(mu / r) # [km / s]

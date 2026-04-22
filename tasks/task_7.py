@@ -14,25 +14,25 @@ t_zero_LMO, yapp_zero_LMO, u_zero_LMO = RK4_mrp(0, t_zero_LMO, h, LMO_attitude.g
 mrp_zero_LMO = yapp_zero_LMO[:, 0:3]
 omega_zero_LMO = yapp_zero_LMO[:, 3:6]
 
-fig_zero_state, ax_zero_state = plt.subplots(3, 1, sharex=True)
+fig_zero_state, ax_zero_state = plt.subplots(3, 1, sharex=True, figsize=(10, 8))
 
 ax_zero_state[0].plot(t_zero_LMO, mrp_zero_LMO, linewidth=3)
-ax_zero_state[0].set_ylabel('MRP')
-ax_zero_state[0].legend([f'$\\sigma_1$', f'$\\sigma_2$', f'$\\sigma_3$'])
+ax_zero_state[0].set_ylabel('MRP', fontsize=14)
+ax_zero_state[0].legend([f'$\\sigma_1$', f'$\\sigma_2$', f'$\\sigma_3$'], fontsize=12)
 ax_zero_state[0].grid()
 
 ax_zero_state[1].plot(t_zero_LMO, omega_zero_LMO, linewidth=3)
-ax_zero_state[1].set_ylabel('Angular Velocity [rad / s]')
-ax_zero_state[1].legend([f'$\\omega_1$', f'$\\omega_2$', f'$\\omega_3$'])
+ax_zero_state[1].set_ylabel('Angular Velocity [rad / s]', fontsize=14)
+ax_zero_state[1].legend([f'$\\omega_1$', f'$\\omega_2$', f'$\\omega_3$'], fontsize=12)
 ax_zero_state[1].grid()
 
 ax_zero_state[2].plot(t_zero_LMO, u_zero_LMO, linewidth=3)
-ax_zero_state[2].set_xlabel('Time [s]')
-ax_zero_state[2].set_ylabel('Control Torque [N * m]')
-ax_zero_state[2].legend([f'$\\tau_1$', f'$\\tau_2$', f'$\\tau_3$'])
+ax_zero_state[2].set_xlabel('Time [s]', fontsize=14)
+ax_zero_state[2].set_ylabel('Control Torque [N * m]', fontsize=14)
+ax_zero_state[2].legend([f'$\\tau_1$', f'$\\tau_2$', f'$\\tau_3$'], fontsize=12)
 ax_zero_state[2].grid()
 
-fig_zero_state.suptitle('LMO Attitude Propagation')
+fig_zero_state.suptitle('LMO State Propagation (No Control)', fontsize=16)
 fig_zero_state.tight_layout()
 
 t_const_LMO = 100 # [s]
@@ -41,25 +41,26 @@ t_const_LMO, yapp_const_LMO, u_const_LMO = RK4_mrp(0, t_const_LMO, h, LMO_attitu
 
 mrp_const_LMO = yapp_const_LMO[:, 0:3]
 omega_const_LMO = yapp_const_LMO[:, 3:6]
-fig_const_state, ax_const_state = plt.subplots(3, 1, sharex=True)
+
+fig_const_state, ax_const_state = plt.subplots(3, 1, sharex=True, figsize=(10, 8))
 
 ax_const_state[0].plot(t_const_LMO, mrp_const_LMO, linewidth=3)
-ax_const_state[0].set_ylabel('MRP')
-ax_const_state[0].legend([f'$\\sigma_1$', f'$\\sigma_2$', f'$\\sigma_3$'])
+ax_const_state[0].set_ylabel('MRP', fontsize=14)
+ax_const_state[0].legend([f'$\\sigma_1$', f'$\\sigma_2$', f'$\\sigma_3$'], fontsize=12)
 ax_const_state[0].grid()
 
 ax_const_state[1].plot(t_const_LMO, omega_const_LMO, linewidth=3)
-ax_const_state[1].set_ylabel('Angular Velocity [rad / s]')
-ax_const_state[1].legend([f'$\\omega_1$', f'$\\omega_2$', f'$\\omega_3$'])
+ax_const_state[1].set_ylabel('Angular Velocity [rad / s]', fontsize=14)
+ax_const_state[1].legend([f'$\\omega_1$', f'$\\omega_2$', f'$\\omega_3$'], fontsize=12)
 ax_const_state[1].grid()
 
 ax_const_state[2].plot(t_const_LMO, u_const_LMO, linewidth=3)
-ax_const_state[2].set_xlabel('Time [s]')
-ax_const_state[2].set_ylabel('Control Torque [N * m]')
-ax_const_state[2].legend([f'$\\tau_1$', f'$\\tau_2$', f'$\\tau_3$'])
+ax_const_state[2].set_xlabel('Time [s]', fontsize=14)
+ax_const_state[2].set_ylabel('Control Torque [N * m]', fontsize=14)
+ax_const_state[2].legend([f'$\\tau_1$', f'$\\tau_2$', f'$\\tau_3$'], fontsize=12)
 ax_const_state[2].grid()
 
-fig_const_state.suptitle('LMO Attitude Propagation with Constant Control')
+fig_const_state.suptitle('LMO State Propagation (Constant Control)', fontsize=16)
 fig_const_state.tight_layout()
 
 Path("output/task_7").mkdir(parents=True, exist_ok=True)

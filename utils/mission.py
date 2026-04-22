@@ -109,16 +109,21 @@ class Mission():
         X = np.zeros((N + 1, X0.size))
         t = np.zeros(N + 1)
         u = np.zeros((N + 1, u0.size))
+        mrp_error = np.zeros((N + 1, 3))
+        mode = np.zeros(N + 1)
 
         X[0, :] = X0
         t[0] = a
         u[0, :] = u0
+        mode[0] = 0
 
         for j in range(1, N + 1):
             cart_state = self.orbit.get_cart_state_vector()
             
             if cart_state[1] > 0:
                 control_law = self.u_Rs
+                mrp_error[j] = np.linalg.norm(dcm2mrp(self.get_BRs()))
+                mode[j] = 1
             else:
                 rvec = cart_state[0:3]
                 companion_cart_state = companion.orbit.get_cart_state_vector()
@@ -126,8 +131,13 @@ class Mission():
                 comms_angle = np.arccos(np.dot(rvec, companion_rvec) / (np.linalg.norm(rvec) * np.linalg.norm(companion_rvec)))
                 if comms_angle < max_comms_angle:
                     control_law = self.u_Rc
+                    mrp_error[j] = np.linalg.norm(dcm2mrp(self.get_BRc(0, companion)))
+                    mode[j] = 2
                 else:
                     control_law = self.u_Rn
+                    mrp_error[j] = np.linalg.norm(dcm2mrp(self.get_BRn(0)))
+
+                    mode[j] = 3
 
             uj = control_law(0, P, K, **kwargs)
             u[j] = uj
@@ -144,7 +154,7 @@ class Mission():
             self.attitude.update_state('MRP', X[j, 6:12])
             companion.orbit.update_from_kep_state(X[j, 12:18])
 
-        return t, X, u
+        return t, X, u, mode, mrp_error
 
 def eom(t, X, mission, companion, u, type):
     orbit_state = X[0:6]
